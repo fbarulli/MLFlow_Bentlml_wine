@@ -1,0 +1,11 @@
+# mlflow_tracking/requirements.txt
+bentoml[mlflow]==1.4.12
+mlflow>=2.22.0
+scikit-learn==1.2.2
+pandas==2.2.3
+matplotlib==3.9.2
+numpy==1.26.4
+kagglehub==0.3.12
+pytest==8.3.3
+pydantic==2.9.2
+requests==2.32.3
