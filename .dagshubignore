@@ -1,0 +1,7 @@
+Dockerfile.bentoml
+Dockerfile.train
+build-train.sh
+requirements.txt
+run-train.sh
+service.py
+wine.py
