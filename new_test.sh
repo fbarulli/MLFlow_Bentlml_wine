@@ -5,9 +5,10 @@ set -e
 
 # --- Source Environment Variables ---
 # Load variables from .env file
-# We need them in the host script to pass to Docker run options/name
+# We need them in the host script to pass to Docker run options/name, and also for explicit -e flags
 if [ -f .env ]; then
     # Use `set -a` to automatically export variables read by `source`
+    # This makes them available to the rest of the script and commands like docker build/run
     set -a
     source .env
     set +a
@@ -18,6 +19,8 @@ fi
 
 # --- Configuration (Loaded from .env) ---
 # TRAIN_IMAGE_NAME is sourced from .env
+# MLFLOW_TRACKING_USERNAME, MLFLOW_TRACKING_TOKEN/PASSWORD are also sourced
+
 # Use a temporary container name for this direct run
 DIRECT_CONTAINER_NAME="pipeline-direct-run-$(date +%Y%m%d%H%M%S)"
 
@@ -25,6 +28,18 @@ DIRECT_CONTAINER_NAME="pipeline-direct-run-$(date +%Y%m%d%H%M%S)"
 if [ -z "$TRAIN_IMAGE_NAME" ]; then
     echo "Error: TRAIN_IMAGE_NAME not set in .env file."
     exit 1
+fi
+
+# Need MLflow credentials from .env for explicit passing
+if [ -z "$MLFLOW_TRACKING_USERNAME" ] || [ -z "$MLFLOW_TRACKING_TOKEN" ] && [ -z "$MLFLOW_TRACKING_PASSWORD" ]; then
+    echo "Error: MLFLOW_TRACKING_USERNAME and MLFLOW_TRACKING_TOKEN/PASSWORD must be set in .env file."
+    exit 1
+fi
+
+# Use TOKEN if available, otherwise PASSWORD
+AUTH_TOKEN="$MLFLOW_TRACKING_TOKEN"
+if [ -z "$AUTH_TOKEN" ]; then
+    AUTH_TOKEN="$MLFLOW_TRACKING_PASSWORD"
 fi
 
 
@@ -60,7 +75,8 @@ fi
 # Ensure a container with the same name isn't running (less likely with timestamp, but safer)
 if docker container inspect "$DIRECT_CONTAINER_NAME" >/dev/null 2>&2; then
     echo "Warning: Container '$DIRECT_CONTAINER_NAME' already exists. Removing it."
-    docker rm -f "$DIRECT_CONTAINER_NAME" >/dev/null 2>&2 || true
+    # Use the cleanup function to remove it safely
+    cleanup
 fi
 
 
@@ -68,11 +84,14 @@ fi
 # -it: interactive and allocate a pseudo-TTY (allows seeing output live)
 # --rm: remove on exit (important for cleanup)
 # --name: unique name for this container run
-# --env-file: Read environment variables directly from the .env file on the host
+# --env-file: Read environment variables directly from the .env file on the host (keeps other variables)
+# -e: Explicitly set MLflow credentials as environment variables for the container
 docker run \
   -it --rm \
   --name "$DIRECT_CONTAINER_NAME" \
   --env-file .env \
+  -e MLFLOW_TRACKING_USERNAME="$MLFLOW_TRACKING_USERNAME" \
+  -e MLFLOW_TRACKING_PASSWORD="$AUTH_TOKEN" \
   "$TRAIN_IMAGE_NAME" \
   python pipeline.py # <-- Run the main script directly
 
