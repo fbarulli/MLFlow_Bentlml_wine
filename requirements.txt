@@ -10,3 +10,5 @@ pytest==8.3.3
 pydantic==2.9.2
 requests==2.32.3
 dagshub>=0.2.8
+seaborn 
+joblib 

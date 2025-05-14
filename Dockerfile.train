@@ -1,18 +1,52 @@
-FROM python:3.10
+# Dockerfile.train
+FROM docker.io/library/python:3.10
+
+# Set environment variables (best to do this on separate lines or correctly formatted)
+ENV PYTHONUNBUFFERED=1
+# If you need to set HOME or other env vars, do them like this:
+# ENV HOME=/root
+
 WORKDIR /app
 
+# Install necessary system packages (like libgomp1, git, dvc)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
+    git \
+    dvc \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy requirements.txt first to leverage Docker cache
 COPY requirements.txt .
 
+# Add step to update pip using the new install/upgrade pip syntax
+RUN pip install --no-cache-dir --upgrade pip
+
+# Install Python dependencies using the updated pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY pipeline.py .
+
+# Copy your application code modules
+# Copy these *after* pip install, as changes to these trigger rebuilds from here
 COPY config.py .
 COPY data.py .
 COPY models.py .
 COPY training.py .
 COPY mlflow_logging.py .
+COPY pipeline.py .
 
+# Copy data file (adjust source path if needed)
+# Ensure your data.py uses the correct path within the container
+COPY winequality-red.csv /app/data/ # Creates a 'data' directory inside /app and copies the file
+
+
+# Set the default command to run your pipeline script
+# CMD ["python", "pipeline.py"]
+
+# If you decide to use the entrypoint.sh approach later:
+# COPY entrypoint.sh /usr/local/bin/
+# RUN chmod +x /usr/local/bin/entrypoint.sh
+# ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# CMD ["python", "pipeline.py"] # The command passed to entrypoint.sh
+
+# Using CMD directly for now:
+CMD ["python", "pipeline.py"]
