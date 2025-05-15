@@ -27,7 +27,7 @@ fi
 # Adding || true prevents the script from exiting if pruning fails (e.g., no cache to prune).
 echo "--- Pruning Docker Build Cache ---"
 # Using docker builder prune specifically targets build cache
-docker builder prune -f || true
+docker system prune -f || true
 echo "Build cache pruning finished."
 echo "--------------------------------"
 

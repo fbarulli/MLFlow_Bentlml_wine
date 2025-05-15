@@ -93,8 +93,8 @@ def main():
                 logger.info(f"Processing model: {model_name}")
                 # Use a try/except block around each model's processing
                 # so failure of one model doesn't stop the entire pipeline
-                nested_run = None # Initialize nested_run for try/except scope
                 try:
+                    nested_run = None # Initialize nested_run for try/except scope
                     # Start a nested MLflow run for each model
                     # This is inside the 'with parent_run:' block, so it's correctly nested.
                     with mlflow.start_run(run_name=model_name, nested=True) as nested_run:
@@ -129,7 +129,9 @@ def main():
                 except Exception as model_run_err:
                     # This catches errors specifically during one model's training/logging
                     logger.error(f"An error occurred during the nested run for {model_name}: {str(model_run_err)}")
+                    print(f"An error occurred during the nested run for {model_name}: {str(model_run_err)}")
                     logger.error(traceback.format_exc())
+                    print("Exception caught in pipeline.py!")
                     # Attempt to log failure to the *current* active run (which should be the failed nested one)
                     if nested_run and mlflow.active_run() and mlflow.active_run().info.run_id == nested_run.info.run_id:
                          logger.warning(f"Attempting to log failure status to nested run {nested_run.info.run_id}.")
@@ -143,9 +145,9 @@ def main():
                     else:
                          # Fallback if nested_run wasn't even successfully started or assigned
                          logger.warning(f"Error occurred processing {model_name}, but could not log failure to a specific nested run.")
-
-                logger.warning(f"Skipping remaining processing for {model_name} due to error.")
-                # Continue the loop to try the next model
+                    logger.warning(f"Skipping remaining processing for {model_name} due to error.")
+                    raise model_run_err
+                    # Continue the loop to try the next model
 
             # --- End of loop over model_configs ---
 

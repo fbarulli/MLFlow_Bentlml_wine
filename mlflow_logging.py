@@ -11,8 +11,16 @@ from sklearn.metrics import confusion_matrix, classification_report
 
 # Import necessary modules
 import mlflow.tracking.client
-from mlflow.entities.model_versions import ModelVersion # <-- Corrected import
+from mlflow.entities.model_registry import ModelVersion
 import traceback # <--- ADDED IMPORT
+
+
+
+
+
+
+
+print(mlflow.__version__)
 
 logger = logging.getLogger(__name__)
 
@@ -62,50 +70,93 @@ def _log_metrics(report_dict, quality_order):
         # Do not re-raise
 
 
-def _log_and_register_model(model, model_name):
+def _log_and_register_model(model, model_name, X_train=None):
     """
     Logs the model artifact and registers it in the MLflow Model Registry.
-
-    Returns:
-        mlflow.ModelVersion or None: The ModelVersion object if registered successfully, else None.
-                                      Returns None if logging or registration fails.
+    Includes model signature and input example when available.
     """
-    # Ensure valid chars for registered model name
     registered_model_name = f"tracking-wine-{model_name.lower().replace(' ', '-')}"
-    artifact_path = model_name.lower().replace(' ', '_') # Artifact path within the run
-
+    artifact_path = model_name.lower().replace(' ', '_')
     logger.info(f"Logging model artifact to '{artifact_path}' and attempting registration as '{registered_model_name}'...")
-
-    model_info = None # Initialize model_info to None
+    model_info = None
+    
     try:
-        # log_model returns ModelVersion object if registration is successful
-        # If registration fails, it might raise an exception or return something else?
+        # Create model signature and input example if X_train is provided
+        signature = None
+        input_example = None
+        
+        if X_train is not None:
+            try:
+                from mlflow.models.signature import infer_signature
+                
+                # Get a single row as example (avoid large input examples)
+                example_X = X_train.iloc[:1] if hasattr(X_train, 'iloc') else X_train[:1]
+                
+                # Try to infer the model signature from the model and input data
+                # For the output schema, we'll predict on the example
+                example_y_pred = model.predict(example_X)
+                
+                # Infer the signature from input and output
+                signature = infer_signature(example_X, example_y_pred)
+                
+                # Use the same example as input_example
+                input_example = example_X
+                
+                logger.info("Successfully created model signature and input example")
+            except Exception as sig_err:
+                logger.warning(f"Failed to create model signature: {type(sig_err).__name__} - {sig_err}")
+                logger.warning(traceback.format_exc())
+                # Continue without signature if it fails
+        
+        # Log the model with signature and example if available
         model_info = mlflow.sklearn.log_model(
-             sk_model=model,
-             artifact_path=artifact_path,
-             registered_model_name=registered_model_name
+            sk_model=model,
+            artifact_path=artifact_path,
+            registered_model_name=registered_model_name,
+            signature=signature,
+            input_example=input_example
         )
-
-        # --- ROBUSTIFIED SUCCESS LOG ---
-        # Check if model_info is a ModelVersion object and has the expected attributes
-        if isinstance(model_info, mlflow.ModelVersion) and hasattr(model_info, 'version') and hasattr(model_info, 'name'):
-             logger.info(f"Model '{model_name}' logged successfully. Registered as '{model_info.name}' version {model_info.version}.")
+        
+        if hasattr(model_info, 'model_uri'):
+            logger.info(f"Model '{model_name}' logged successfully to {model_info.model_uri}")
+            
+        if isinstance(model_info, ModelVersion) and hasattr(model_info, 'version') and hasattr(model_info, 'name'):
+            logger.info(f"Model '{model_name}' registered as '{model_info.name}' version {model_info.version}.")
         elif model_info is not None:
-             # Log if it returned something unexpected but not None
-             logger.warning(f"mlflow.sklearn.log_model returned unexpected object type after registration attempt: {type(model_info)}. Cannot confirm registration details.")
+            # For newer MLflow versions that return ModelInfo instead of ModelVersion
+            logger.info(f"Model '{model_name}' logged successfully. Check MLflow UI for registration details.")
+            
+            # Try to extract registration info from ModelInfo if possible
+            if hasattr(model_info, 'run_id') and hasattr(model_info, 'model_uri'):
+                logger.info(f"Run ID: {model_info.run_id}, Model URI: {model_info.model_uri}")
+                
+                # Try to extract the version from the model_uri if possible
+                # Format is usually runs:/run_id/artifacts/model_path
+                try:
+                    client = mlflow.tracking.client.MlflowClient()
+                    versions = client.search_model_versions(f"name='{registered_model_name}'")
+                    # Sort by creation timestamp to get the latest
+                    versions.sort(key=lambda x: x.creation_timestamp, reverse=True)
+                    if versions:
+                        latest_version = versions[0].version
+                        logger.info(f"Latest model version for '{registered_model_name}': {latest_version}")
+                        # Create a minimal ModelVersion-like object with name and version attributes
+                        class MinimalModelVersion:
+                            def __init__(self, name, version):
+                                self.name = name
+                                self.version = version
+                        
+                        # Return this object so _set_staging_alias can use it
+                        return MinimalModelVersion(registered_model_name, latest_version)
+                except Exception as e:
+                    logger.warning(f"Failed to extract version details: {type(e).__name__} - {e}")
         else:
-             # Log if it returned None, implying registration likely failed silently
-             logger.warning("mlflow.sklearn.log_model returned None after registration attempt. Registration likely failed.")
-
-        return model_info # Return the object returned by log_model
-
+            logger.warning("mlflow.sklearn.log_model returned None. Registration likely failed.")
+            
+        return model_info
     except Exception as e:
-        # Log exception type and message
         logger.error(f"Failed to log or register model '{model_name}' as '{registered_model_name}': {type(e).__name__} - {e}")
-        # Log the full traceback for detailed debugging
-        logger.error(traceback.format_exc()) # <--- traceback module is now imported
-
-        # Do not re-raise, indicate failure by returning None
+        logger.error(traceback.format_exc())
         return None
 
 
@@ -221,7 +272,17 @@ def _log_coefficient_plot(model, wine_feature_names, quality_order, model_name, 
              plt.figure(figsize=(10, 6))
              coef_df = pd.DataFrame({'Feature': wine_feature_names, 'Coefficient': class_coefs})
              coef_df = coef_df.sort_values(by='Coefficient', ascending=False) # Sort by importance
-             sns.barplot(x='Coefficient', y='Feature', data=coef_df, palette='viridis')
+             
+             # Updated seaborn barplot call to avoid deprecation warning
+             sns.barplot(
+                 x='Coefficient', 
+                 y='Feature', 
+                 data=coef_df, 
+                 hue='Feature',    # Use Feature as the hue variable  
+                 palette='viridis', # Keep the color palette
+                 legend=False      # Don't show the legend since it would be redundant
+             )
+             
              plt.title(f'Feature Coefficients for Quality {quality_names[i]} ({model_name})')
              plt.xlabel('Coefficient Value')
              plt.ylabel('Feature')
@@ -242,7 +303,6 @@ def _log_coefficient_plot(model, wine_feature_names, quality_order, model_name, 
          # Log exception type and message
          logger.warning(f"Failed to log coefficients plot for {model_name}: {type(e).__name__} - {e}")
          logger.warning(traceback.format_exc()) # Log traceback for plotting failure
-         # Do not re-raise
 
 
 def _log_feature_importance_plot(model, wine_feature_names, model_name, output_dir):
@@ -258,7 +318,7 @@ def _log_feature_importance_plot(model, wine_feature_names, model_name, output_d
         importance_df = importance_df.sort_values(by='Importance', ascending=False)
 
         plt.figure(figsize=(10, 6))
-        sns.barplot(x='Importance', y='Feature', data=importance_df, palette='viridis')
+        sns.barplot(x='Importance', y='Feature', data=importance_df, palette='viridis', hue='Feature', legend=False)
         plt.title(f'Feature Importances for {model_name}')
         plt.xlabel('Importance')
         plt.ylabel('Feature')
@@ -284,10 +344,18 @@ def _log_confusion_matrix_plot(model, X_test, y_test, quality_order, model_name,
     logger.info(f"Attempting to log confusion matrix plot for {model_name}...")
     try:
         y_pred = model.predict(X_test)
-        cm = confusion_matrix(y_test, y_pred, labels=quality_order)
-        cm_df = pd.DataFrame(cm, index=quality_order, columns=quality_order)
+        
+        # Check what values actually exist in y_test and y_pred
+        actual_classes = sorted(set(y_test))
+        logger.info(f"Actual unique classes in y_test: {actual_classes}")
+        
+        # Use the actual values from the dataset instead of relying on quality_order
+        cm = confusion_matrix(y_test, y_pred)
+        
+        # Create a DataFrame with the actual class labels
+        cm_df = pd.DataFrame(cm, index=actual_classes, columns=actual_classes)
 
-        plt.figure(figsize=(len(quality_order)*1.2, len(quality_order)*1.2))
+        plt.figure(figsize=(len(actual_classes)*1.2, len(actual_classes)*1.2))
         sns.heatmap(cm_df, annot=True, fmt='d', cmap='Blues')
         plt.title(f'Confusion Matrix for {model_name}')
         plt.xlabel('Predicted Quality')
@@ -304,63 +372,45 @@ def _log_confusion_matrix_plot(model, X_test, y_test, quality_order, model_name,
     except Exception as e:
         logger.warning(f"Could not generate/log confusion matrix plot for {model_name}: {type(e).__name__} - {e}")
         logger.warning(traceback.format_exc())
-        # Do not re-raise
 
 
 def log_model_run(model, model_name, model_params, report_dict, X_train, X_test, y_test, wine_feature_names, quality_order, output_dir):
-    """
-    Orchestrates logging model parameters, metrics, and artifacts to the current active MLflow run.
-    Also attempts to register the model and assign a 'Staging' alias.
-    Calls helper functions for each logging task.
-    """
-    # Ensure we are in an active MLflow run context
+    """Orchestrates logging model parameters, metrics, and artifacts to the current active MLflow run."""
     if not mlflow.active_run():
         logger.error(f"log_model_run called outside of an active MLflow run for model '{model_name}'. Skipping logging.")
         return
-
     current_run_id = mlflow.active_run().info.run_id
     logger.info(f"Starting MLflow logging orchestration for model '{model_name}' in run {current_run_id}...")
-
     try:
-        # Ensure the output directory exists for temporary artifact saving
-        # This is also done in setup_environment, but redundant check is safe.
         os.makedirs(output_dir, exist_ok=True)
         logger.info(f"Ensured temporary artifact directory exists: {output_dir}")
-
-        # 1. Log Parameters
         _log_parameters(model_params, model)
-
-        # 2. Log Metrics
         _log_metrics(report_dict, quality_order)
-
-        # 3. Log and Register Model
-        # This will return the ModelVersion object if registration is successful
-        model_info = _log_and_register_model(model, model_name)
-        # Get the registered model name from the returned object if it's valid
-        registered_model_name = model_info.name if isinstance(model_info, mlflow.ModelVersion) else None
-
-        # 4. Set Staging Alias (only if model registration was successful)
+        
+        # Pass X_train to _log_and_register_model
+        model_info = _log_and_register_model(model, model_name, X_train)
+        
+        # Updated logic for determining the registered model name
+        registered_model_name = None
+        if isinstance(model_info, ModelVersion) or (hasattr(model_info, 'name') and hasattr(model_info, 'version')):
+            registered_model_name = model_info.name
+        else:
+            # Fallback for when model_info doesn't have the expected attributes
+            registered_model_name = f"tracking-wine-{model_name.lower().replace(' ', '-')}"
+            logger.info(f"Using fallback registered model name: {registered_model_name}")
+        
         if registered_model_name:
-            _set_staging_alias(registered_model_name, model_info) # Pass model_info to use its version directly
+            _set_staging_alias(registered_model_name, model_info)
         else:
             logger.warning(f"Model registration failed or skipped for {model_name}. Skipping alias assignment.")
-
-
-        # 5. Log Predictions Artifact
+        
         _log_predictions_artifact(model, X_test, y_test, model_name, output_dir)
-
-        # 6. Log Plot Artifacts (conditional on model type)
         _log_confusion_matrix_plot(model, X_test, y_test, quality_order, model_name, output_dir)
         _log_coefficient_plot(model, wine_feature_names, quality_order, model_name, output_dir)
         _log_feature_importance_plot(model, wine_feature_names, model_name, output_dir)
-
-
         logger.info(f"MLflow logging orchestration complete for model '{model_name}'.")
-
     except Exception as e:
-        # This catches any unexpected errors that might escape the helper functions
         logger.error(f"An unexpected error occurred during MLflow logging orchestration for '{model_name}': {type(e).__name__} - {e}")
         logger.error(traceback.format_exc())
-        # Do NOT re-raise here, as failure in logging should not stop the overall pipeline
-        pass
+        raise
 

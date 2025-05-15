@@ -1,0 +1,149 @@
+2.22.0
+2025-05-15 14:20:29,347 - __main__ - INFO - Starting ML pipeline...
+2025-05-15 14:20:29,348 - config - INFO - Starting DagsHub/MLflow initialization...
+2025-05-15 14:20:29,348 - config - INFO - DEBUG: Raw MLFLOW_TRACKING_TOKEN: '"71f26894d16c0acc62defa4c841c90f2f2ae4716" ' (Type: <class 'str'>)
+2025-05-15 14:20:29,348 - config - INFO - DEBUG: Raw MLFLOW_TRACKING_PASSWORD: '71f26894d16c0acc62defa4c841c90f2f2ae4716' (Type: <class 'str'>)
+2025-05-15 14:20:29,348 - config - INFO - DEBUG: Processed token used for auth: '71f26894d16c0acc62defa4c841c90f2f2ae4716' (Length: 40)
+2025-05-15 14:20:29,348 - config - INFO - DEBUG: Processed token (partial): '71f26...e4716'
+2025-05-15 14:20:29,348 - config - INFO - Set MLFLOW/DAGSHUB environment variables in Python process.
+2025-05-15 14:20:29,349 - config - INFO - Ensured directory exists: /root/.dagshub
+2025-05-15 14:20:29,349 - config - INFO - Created credentials file at /root/.dagshub/credentials
+2025-05-15 14:20:29,349 - config - INFO - Created token cache at /root/.dagshub/token_cache.json
+2025-05-15 14:20:29,349 - config - INFO - Created session file at /root/.dagshub/.session
+2025-05-15 14:20:29,350 - config - INFO - Attempting to create .netrc file at /root/.netrc for DVC/Git auth.
+2025-05-15 14:20:29,350 - config - INFO - Successfully created and secured .netrc file at /root/.netrc
+2025-05-15 14:20:29,350 - config - INFO - Attempting to parse repo owner/name from MLFLOW_TRACKING_URI: mlflow+https://dagshub.com/fbarulli/MLFlow_backend.mlflow
+2025-05-15 14:20:29,350 - config - INFO - Parsed owner: fbarulli, Final repo name: MLFlow_backend
+2025-05-15 14:20:29,350 - config - INFO - Attempting direct authentication using dagshub.auth methods...
+2025-05-15 14:20:29,350 - config - INFO - Using add_app_token method...
+2025-05-15 14:20:29,550 - httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/user "HTTP/1.1 200 OK"
+2025-05-15 14:20:29,553 - config - INFO - dagshub.auth.add_app_token succeeded.
+2025-05-15 14:20:29,553 - config - INFO - MLflow tracking URI set to: mlflow+https://dagshub.com/fbarulli/MLFlow_backend.mlflow
+2025-05-15 14:20:29,553 - config - INFO - Initializing DagsHub integration for fbarulli/MLFlow_backend using explicit init...
+2025-05-15 14:20:29,743 - httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/user "HTTP/1.1 200 OK"
+Accessing as fbarulli
+2025-05-15 14:20:29,755 - dagshub - INFO - Accessing as fbarulli
+2025-05-15 14:20:29,994 - httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/repos/fbarulli/MLFlow_backend "HTTP/1.1 200 OK"
+2025-05-15 14:20:30,177 - httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/user "HTTP/1.1 200 OK"
+Initialized MLflow to track repo "fbarulli/MLFlow_backend"
+2025-05-15 14:20:30,182 - dagshub - INFO - Initialized MLflow to track repo "fbarulli/MLFlow_backend"
+Repository fbarulli/MLFlow_backend initialized!
+2025-05-15 14:20:30,184 - dagshub - INFO - Repository fbarulli/MLFlow_backend initialized!
+2025-05-15 14:20:30,184 - config - INFO - DagsHub MLflow integration initialized successfully (explicit).
+2025-05-15 14:20:30,184 - config - INFO - Setting up environment...
+2025-05-15 14:20:30,184 - config - INFO - Outputs folder created at /app/outputs
+2025-05-15 14:20:30,184 - config - INFO - MLflow tracking URI confirmed and set to: https://dagshub.com/fbarulli/MLFlow_backend.mlflow
+2025-05-15 14:20:30,185 - config - INFO - MLflow Scikit-learn autologging disabled.
+2025-05-15 14:20:30,185 - __main__ - INFO - Using output directory: /app/outputs
+2025-05-15 14:20:30,185 - __main__ - INFO - Loading and preprocessing data...
+2025-05-15 14:20:30,185 - data - INFO - Attempting to download dataset 'wine_quality_classification.csv' from Kaggle repo 'sahideseker/wine-quality-classification' using kagglehub
+Downloading from https://www.kaggle.com/api/v1/datasets/download/sahideseker/wine-quality-classification?dataset_version_number=1&file_name=wine_quality_classification.csv...
+  0%|          | 0.00/25.3k [00:00<?, ?B/s]100%|██████████| 25.3k/25.3k [00:00<00:00, 5.76MB/s]
+2025-05-15 14:20:31,880 - data - INFO - Dataset downloaded successfully using kagglehub.
+2025-05-15 14:20:31,880 - data - INFO - Dataset shape: (1000, 5)
+2025-05-15 14:20:31,885 - data - INFO - Target encoded successfully.
+2025-05-15 14:20:31,896 - data - INFO - Data split successfully. Train shape: (800, 4), Test shape: (200, 4)
+2025-05-15 14:20:31,896 - __main__ - INFO - Data loaded and preprocessed. Train samples: 800, Test samples: 200
+2025-05-15 14:20:31,896 - __main__ - INFO - Feature names (4) match X_train shape (4).
+2025-05-15 14:20:31,897 - __main__ - INFO - Getting model configurations...
+2025-05-15 14:20:31,897 - models - INFO - Defined 2 model configurations.
+2025-05-15 14:20:31,897 - __main__ - INFO - Found 2 model configurations.
+2025-05-15 14:20:32,105 - __main__ - INFO - MLflow Experiment set to: 'Wine_Quality_Classification'
+2025-05-15 14:20:32,105 - __main__ - INFO - Starting parent MLflow run.
+2025-05-15 14:20:32,405 - __main__ - INFO - Parent MLflow run started: d0881ffc9f2d45cdbc82fe23c917e87c
+2025-05-15 14:20:32,405 - __main__ - INFO - 🏃 View run at: mlflow-artifacts:/d4901052ed2c43cbbf9498bac58e1b0f/d0881ffc9f2d45cdbc82fe23c917e87c/artifacts
+2025-05-15 14:20:32,405 - __main__ - INFO - 🧪 View experiment at: https://dagshub.com/fbarulli/MLFlow_backend.mlflow#/experiments/0
+2025-05-15 14:20:32,405 - __main__ - INFO - Logging global parameters to parent run...
+2025-05-15 14:20:32,946 - __main__ - INFO - Global parameters logged to parent run.
+2025-05-15 14:20:32,947 - __main__ - INFO - Processing model: LogisticRegression
+2025-05-15 14:20:33,132 - __main__ - INFO - Started nested MLflow run: 6d9d077dcf2b457f99fe038209eb400c for LogisticRegression
+2025-05-15 14:20:33,132 - training - INFO - Instantiating and training LogisticRegression...
+2025-05-15 14:20:33,167 - training - INFO - LogisticRegression training complete.
+2025-05-15 14:20:33,167 - training - INFO - Evaluating LogisticRegression...
+2025-05-15 14:20:33,180 - training - INFO - LogisticRegression evaluation complete.
+2025-05-15 14:20:33,180 - mlflow_logging - INFO - Starting MLflow logging orchestration for model 'LogisticRegression' in run 6d9d077dcf2b457f99fe038209eb400c...
+2025-05-15 14:20:33,181 - mlflow_logging - INFO - Ensured temporary artifact directory exists: /app/outputs
+2025-05-15 14:20:33,181 - mlflow_logging - INFO - Logging parameters...
+2025-05-15 14:20:33,540 - mlflow_logging - INFO - Parameters logged.
+2025-05-15 14:20:33,540 - mlflow_logging - INFO - Logging metrics...
+2025-05-15 14:20:33,721 - mlflow_logging - INFO -   Logged overall_accuracy: 0.3800
+2025-05-15 14:20:33,901 - mlflow_logging - INFO -   Logged macro_avg_precision: 0.3732
+2025-05-15 14:20:34,065 - mlflow_logging - INFO -   Logged macro_avg_recall: 0.3745
+2025-05-15 14:20:34,230 - mlflow_logging - INFO -   Logged macro_avg_f1-score: 0.3738
+2025-05-15 14:20:34,395 - mlflow_logging - INFO -   Logged weighted_avg_precision: 0.3780
+2025-05-15 14:20:35,100 - mlflow_logging - INFO -   Logged weighted_avg_recall: 0.3800
+2025-05-15 14:20:36,096 - mlflow_logging - INFO -   Logged weighted_avg_f1-score: 0.3789
+2025-05-15 14:20:36,096 - mlflow_logging - INFO - Metrics logged.
+2025-05-15 14:20:36,097 - mlflow_logging - INFO - Logging model artifact to 'logisticregression' and attempting registration as 'tracking-wine-logisticregression'...
+2025-05-15 14:20:36,099 - mlflow_logging - INFO - Successfully created model signature and input example
+Registered model 'tracking-wine-logisticregression' already exists. Creating a new version of this model...
+2025/05/15 14:20:48 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: tracking-wine-logisticregression, version 32
+Created version '32' of model 'tracking-wine-logisticregression'.
+2025-05-15 14:20:48,103 - mlflow_logging - INFO - Model 'LogisticRegression' logged successfully to runs:/6d9d077dcf2b457f99fe038209eb400c/logisticregression
+2025-05-15 14:20:48,104 - mlflow_logging - INFO - Model 'LogisticRegression' logged successfully. Check MLflow UI for registration details.
+2025-05-15 14:20:48,104 - mlflow_logging - INFO - Run ID: 6d9d077dcf2b457f99fe038209eb400c, Model URI: runs:/6d9d077dcf2b457f99fe038209eb400c/logisticregression
+2025-05-15 14:20:49,112 - mlflow_logging - INFO - Latest model version for 'tracking-wine-logisticregression': 32
+2025-05-15 14:20:49,113 - mlflow_logging - INFO - Using version 32 obtained from model_version_info for alias assignment.
+2025-05-15 14:20:49,113 - mlflow_logging - INFO - Attempting to assign 'Staging' alias to version 32 of 'tracking-wine-logisticregression'...
+2025-05-15 14:20:51,090 - mlflow_logging - INFO - Successfully assigned 'Staging' alias to version 32 for model 'tracking-wine-logisticregression'.
+2025-05-15 14:20:52,093 - mlflow_logging - INFO - Logging predictions artifact for LogisticRegression...
+2025-05-15 14:20:53,235 - mlflow_logging - INFO - Predictions saved to '/app/outputs/logisticregression_predictions.csv' and logged as artifact: predictions/logisticregression_predictions.csv
+2025-05-15 14:20:53,235 - mlflow_logging - INFO - Attempting to log confusion matrix plot for LogisticRegression...
+2025-05-15 14:20:53,238 - mlflow_logging - INFO - Actual unique classes in y_test: [0.0, 1.0, 2.0]
+2025-05-15 14:20:54,253 - mlflow_logging - INFO - Logged confusion matrix plot artifact: plots/logisticregression_confusion_matrix.png
+2025-05-15 14:20:54,254 - mlflow_logging - INFO - Attempting to log coefficients plot for LogisticRegression...
+2025-05-15 14:20:55,236 - mlflow_logging - INFO - Logged coefficients plot artifact: plots/logisticregression_quality_low_coefficients.png
+2025-05-15 14:20:56,245 - mlflow_logging - INFO - Logged coefficients plot artifact: plots/logisticregression_quality_medium_coefficients.png
+2025-05-15 14:20:57,234 - mlflow_logging - INFO - Logged coefficients plot artifact: plots/logisticregression_quality_high_coefficients.png
+2025-05-15 14:20:57,234 - mlflow_logging - INFO - MLflow logging orchestration complete for model 'LogisticRegression'.
+2025-05-15 14:20:57,234 - __main__ - INFO - Completed nested MLflow run: 6d9d077dcf2b457f99fe038209eb400c for LogisticRegression.
+🏃 View run LogisticRegression at: https://dagshub.com/fbarulli/MLFlow_backend.mlflow/#/experiments/0/runs/6d9d077dcf2b457f99fe038209eb400c
+🧪 View experiment at: https://dagshub.com/fbarulli/MLFlow_backend.mlflow/#/experiments/0
+2025-05-15 14:20:59,105 - __main__ - WARNING - Skipping remaining processing for LogisticRegression due to error.
+2025-05-15 14:20:59,105 - __main__ - INFO - Processing model: RandomForest
+2025-05-15 14:21:00,116 - __main__ - INFO - Started nested MLflow run: 2e74c66f50404938a09e53bf2b640544 for RandomForest
+2025-05-15 14:21:00,116 - training - INFO - Instantiating and training RandomForest...
+2025-05-15 14:21:00,229 - training - INFO - RandomForest training complete.
+2025-05-15 14:21:00,229 - training - INFO - Evaluating RandomForest...
+2025-05-15 14:21:00,243 - training - INFO - RandomForest evaluation complete.
+2025-05-15 14:21:00,243 - mlflow_logging - INFO - Starting MLflow logging orchestration for model 'RandomForest' in run 2e74c66f50404938a09e53bf2b640544...
+2025-05-15 14:21:00,244 - mlflow_logging - INFO - Ensured temporary artifact directory exists: /app/outputs
+2025-05-15 14:21:00,244 - mlflow_logging - INFO - Logging parameters...
+2025-05-15 14:21:02,113 - mlflow_logging - INFO - Parameters logged.
+2025-05-15 14:21:02,113 - mlflow_logging - INFO - Logging metrics...
+2025-05-15 14:21:03,125 - mlflow_logging - INFO -   Logged overall_accuracy: 0.3500
+2025-05-15 14:21:04,118 - mlflow_logging - INFO -   Logged macro_avg_precision: 0.3252
+2025-05-15 14:21:05,099 - mlflow_logging - INFO -   Logged macro_avg_recall: 0.3355
+2025-05-15 14:21:06,099 - mlflow_logging - INFO -   Logged macro_avg_f1-score: 0.3019
+2025-05-15 14:21:07,094 - mlflow_logging - INFO -   Logged weighted_avg_precision: 0.3303
+2025-05-15 14:21:08,105 - mlflow_logging - INFO -   Logged weighted_avg_recall: 0.3500
+2025-05-15 14:21:09,099 - mlflow_logging - INFO -   Logged weighted_avg_f1-score: 0.3116
+2025-05-15 14:21:09,099 - mlflow_logging - INFO - Metrics logged.
+2025-05-15 14:21:09,099 - mlflow_logging - INFO - Logging model artifact to 'randomforest' and attempting registration as 'tracking-wine-randomforest'...
+2025-05-15 14:21:09,105 - mlflow_logging - INFO - Successfully created model signature and input example
+Registered model 'tracking-wine-randomforest' already exists. Creating a new version of this model...
+2025/05/15 14:21:21 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: tracking-wine-randomforest, version 28
+Created version '28' of model 'tracking-wine-randomforest'.
+2025-05-15 14:21:21,095 - mlflow_logging - INFO - Model 'RandomForest' logged successfully to runs:/2e74c66f50404938a09e53bf2b640544/randomforest
+2025-05-15 14:21:21,096 - mlflow_logging - INFO - Model 'RandomForest' logged successfully. Check MLflow UI for registration details.
+2025-05-15 14:21:21,096 - mlflow_logging - INFO - Run ID: 2e74c66f50404938a09e53bf2b640544, Model URI: runs:/2e74c66f50404938a09e53bf2b640544/randomforest
+2025-05-15 14:21:22,112 - mlflow_logging - INFO - Latest model version for 'tracking-wine-randomforest': 28
+2025-05-15 14:21:22,112 - mlflow_logging - INFO - Using version 28 obtained from model_version_info for alias assignment.
+2025-05-15 14:21:22,112 - mlflow_logging - INFO - Attempting to assign 'Staging' alias to version 28 of 'tracking-wine-randomforest'...
+2025-05-15 14:21:24,100 - mlflow_logging - INFO - Successfully assigned 'Staging' alias to version 28 for model 'tracking-wine-randomforest'.
+2025-05-15 14:21:25,092 - mlflow_logging - INFO - Logging predictions artifact for RandomForest...
+2025-05-15 14:21:26,244 - mlflow_logging - INFO - Predictions saved to '/app/outputs/randomforest_predictions.csv' and logged as artifact: predictions/randomforest_predictions.csv
+2025-05-15 14:21:26,245 - mlflow_logging - INFO - Attempting to log confusion matrix plot for RandomForest...
+2025-05-15 14:21:26,250 - mlflow_logging - INFO - Actual unique classes in y_test: [0.0, 1.0, 2.0]
+2025-05-15 14:21:27,255 - mlflow_logging - INFO - Logged confusion matrix plot artifact: plots/randomforest_confusion_matrix.png
+2025-05-15 14:21:27,258 - mlflow_logging - INFO - Attempting to log feature importances plot for RandomForest...
+2025-05-15 14:21:28,244 - mlflow_logging - INFO - Logged feature importances plot artifact: plots/randomforest_feature_importances.png
+2025-05-15 14:21:28,245 - mlflow_logging - INFO - MLflow logging orchestration complete for model 'RandomForest'.
+2025-05-15 14:21:28,245 - __main__ - INFO - Completed nested MLflow run: 2e74c66f50404938a09e53bf2b640544 for RandomForest.
+🏃 View run RandomForest at: https://dagshub.com/fbarulli/MLFlow_backend.mlflow/#/experiments/0/runs/2e74c66f50404938a09e53bf2b640544
+🧪 View experiment at: https://dagshub.com/fbarulli/MLFlow_backend.mlflow/#/experiments/0
+2025-05-15 14:21:30,097 - __main__ - WARNING - Skipping remaining processing for RandomForest due to error.
+🏃 View run Wine_Model_Training_Pipeline_Run at: https://dagshub.com/fbarulli/MLFlow_backend.mlflow/#/experiments/0/runs/d0881ffc9f2d45cdbc82fe23c917e87c
+🧪 View experiment at: https://dagshub.com/fbarulli/MLFlow_backend.mlflow/#/experiments/0
+2025-05-15 14:21:32,120 - __main__ - INFO - Completed parent MLflow run: d0881ffc9f2d45cdbc82fe23c917e87c
+2025-05-15 14:21:32,120 - __main__ - INFO - Main pipeline logic finished successfully.

@@ -12,7 +12,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     git \
-    dvc \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt first to leverage Docker cache
@@ -33,20 +32,13 @@ COPY models.py .
 COPY training.py .
 COPY mlflow_logging.py .
 COPY pipeline.py .
-
-# Copy data file (adjust source path if needed)
-# Ensure your data.py uses the correct path within the container
-COPY winequality-red.csv /app/data/ # Creates a 'data' directory inside /app and copies the file
+#COPY debug_logistic_regression.py .
 
 
-# Set the default command to run your pipeline script
-# CMD ["python", "pipeline.py"]
 
-# If you decide to use the entrypoint.sh approach later:
-# COPY entrypoint.sh /usr/local/bin/
-# RUN chmod +x /usr/local/bin/entrypoint.sh
-# ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-# CMD ["python", "pipeline.py"] # The command passed to entrypoint.sh
+
+
+
 
 # Using CMD directly for now:
 CMD ["python", "pipeline.py"]

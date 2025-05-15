@@ -32,6 +32,7 @@ def train_and_evaluate_model(model_config, X_train, X_test, y_train, y_test, qua
         logger.info(f"{model_name} training complete.")
     except Exception as e:
         logger.error(f"Failed to train model {model_name}: {e}")
+        print(f"Failed to train model {model_name}: {e}")
         logger.error(traceback.format_exc())
         raise # Training failure is critical
 

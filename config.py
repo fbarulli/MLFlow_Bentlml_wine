@@ -295,8 +295,8 @@ def setup_environment():
     # Enable Scikit-learn autologging
     # Note: autolog() should generally be called *before* you train your model
     # If your pipeline.py trains the model *after* calling setup_environment, this is correct.
-    mlflow.sklearn.autolog(log_models=False) # log_models=False to avoid logging large models directly
-    logger.info("MLflow Scikit-learn autologging enabled (excluding model logging).")
+    # mlflow.sklearn.autolog(log_models=False) # log_models=False to avoid logging large models directly
+    logger.info("MLflow Scikit-learn autologging disabled.")
 
     return output_dir
 
