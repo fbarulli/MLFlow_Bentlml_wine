@@ -1,30 +1,72 @@
 # Wine Quality Classification Project
 
-This project trains and evaluates machine learning models to classify the quality of wine based on various features. It uses MLflow for experiment tracking and DagsHub for collaboration and version control.
+This project trains and evaluates ML models to classify wine quality using MLflow for experiment tracking and DagsHub for collaboration.
 
 ## File Breakdown
 
-
-*   **`.env`**: Stores environment variables, such as the MLflow tracking URI, username, and token/password. This file is crucial for configuring access to the MLflow server and DagsHub. **Input**: MLflow credentials and URI.
-*   **`bentofile.yaml`**: Configuration file for BentoML, defining the service name, labels, included files, and Python dependencies. It specifies the service class and the requirements file. **Input**: Service name, labels, include patterns, and Python requirements.
-*   **`build-train.sh`**: A shell script that builds the training Docker image. It sources the `.env` file to set environment variables, prunes the Docker build cache, and then builds the Docker image specified by the `TRAIN_IMAGE_NAME` variable in the `.env` file using the `Dockerfile.train` file. **Input**: Environment variables from `.env`.
-*   **`build.sh`**: A shell script that builds the BentoML service. It sources the `.env` file to set environment variables and then uses the `bentoml build` command, along with the configurations specified in the `bentofile.yaml` file, to build the BentoML service. This process uses the instructions in `Dockerfile.bentoml` to create the Docker image for the BentoML service. **Input**: Environment variables from `.env` and configurations from `bentofile.yaml`.
-*   **`check_models.py`**: A Python script that checks the available models and their stages in the MLflow Model Registry. It uses the MLflow client to search for model versions and their aliases, and prints the results to the console. **Input**: MLflow tracking URI and model names.
-*   **`check_sklearn_compatibility.py`**: A Python script that checks the scikit-learn version compatibility with the MLflow models. It loads the models and checks if they can be loaded successfully with the current scikit-learn version. **Input**: MLflow tracking URI and model names.
-*   **`config.py`**: Initializes DagsHub and sets up the environment, including setting the MLflow tracking URI and creating credential files. It reads environment variables, creates `.dagshub` and `.netrc` files for authentication, and initializes the DagsHub integration. **Input**: Environment variables. **Output**: Configured MLflow and DagsHub integrations.
-*   **`data.py`**: Loads the wine quality dataset from KaggleHub, preprocesses it by encoding the target variable, and splits the data into training and testing sets. It downloads the data from KaggleHub, encodes the target variable, and splits the data into training and testing sets. **Input**: None (downloads data from KaggleHub). **Output**: Training and testing sets, quality order, and feature names.
-*   **`debug_logistic_regression.py`**: A script for debugging the Logistic Regression model. This script is not fully implemented and may contain debugging code.
-*   **`Dockerfile.bentoml`**: Dockerfile for building a BentoML service. It uses a Python 3.10 base image, copies the requirements file, installs the dependencies, copies the service file, and sets the command to run the service. **Input**: `requirements.txt` and `service.py`.
-*   **`Dockerfile.train`**: Dockerfile for building the training environment. This file is used to create a Docker image for training the machine learning models.
-*   **`mlflow_logging.py`**: Contains functions for logging model parameters, metrics, and artifacts to MLflow. It includes functions for logging parameters, metrics, model artifacts, predictions, coefficient plots, feature importance plots, and confusion matrix plots. **Input**: Trained model, model name, model parameters, classification report, and data. **Output**: MLflow logs.
-*   **`models.py`**: Defines and returns a list of model configurations to be trained, including Logistic Regression and Random Forest Classifier. It specifies the model class, parameters, and name for each model. **Output**: A list of model configurations.
-*   **`new_test.sh`**: A shell script for running tests. It sets environment variables, checks if the training image exists, and runs the `pipeline.py` script inside a Docker container. **Input**: Environment variables from `.env`.
-*   **`output.log`**: Log file for the pipeline output. This file contains the output of the training pipeline, including the model training and evaluation results.
-*   **`pipeline.py`**: The main script that orchestrates the entire machine learning pipeline. It loads data, preprocesses it, gets model configurations, trains and evaluates models, and logs the results to MLflow. **Input**: None (relies on other modules and configurations). **Output**: Trained models and MLflow logs.
-*   **`problems.md`**: A markdown file documenting the problems encountered during the project and their fixes. It includes a list of issues and their corresponding solutions.
-*   **`requirements.txt`**: Lists the Python dependencies required for the project. This file is used to install the necessary Python packages for the project.
-*   **`service_fixed.py`**: Defines the BentoML service for serving the trained model. It loads the models from the MLflow registry, defines the API endpoints for making predictions, and handles version compatibility issues. **Input**: MLflow models. **Output**: BentoML service.
-*   **`service.py`**: Defines the BentoML service for serving the trained model. It loads the models from the MLflow registry and defines the API endpoints for making predictions. **Input**: MLflow models. **Output**: BentoML service.
-*   **`train_container.log`**: Log file for the training container output. This file contains the output of the training container, including the model training and evaluation results.
-*   **`training.py`**: Trains and evaluates a model based on a given configuration. It trains the model using the training data, evaluates it using the testing data, and logs the results to MLflow. **Input**: Model configuration, training data, and testing data. **Output**: Trained model and classification report.
-*   **`wine_work.py`**: A script for working with the wine quality data. This script may contain data exploration and preprocessing code.
+*   **.env**:
+    *   Stores MLflow credentials and URI for accessing the MLflow server and DagsHub.
+    *   **Input**: MLflow credentials and URI.
+*   **bentofile.yaml**:
+    *   BentoML configuration: service name, labels, files, Python dependencies, service class, and requirements file.
+    *   **Input**: Service name, labels, include patterns, Python requirements.
+*   **build-train.sh**:
+    *   Builds the training Docker image using `Dockerfile.train`.
+    *   **Input**: Env variables from `.env`.
+*   **build.sh**:
+    *   Builds the BentoML service using `bentoml build` and configurations from `bentofile.yaml`. Uses instructions in `Dockerfile.bentoml`.
+    *   **Input**: Environment variables from `.env`, configurations from `bentofile.yaml`.
+*   **check_models.py**:
+    *   Checks available models and their stages in the MLflow Model Registry.
+    *   **Input**: MLflow tracking URI, model names.
+*   **check_sklearn_compatibility.py**:
+    *   Checks scikit-learn version compatibility with MLflow models.
+    *   **Input**: MLflow tracking URI, model names.
+*   **config.py**:
+    *   Initializes DagsHub, sets up the environment, and configures MLflow tracking URI.
+    *   **Input**: Environment variables.
+    *   **Output**: Configured MLflow and DagsHub integrations.
+*   **data.py**:
+    *   Loads and preprocesses the wine quality dataset from KaggleHub, splitting it into training and testing sets.
+    *   **Input**: None (downloads data from KaggleHub).
+    *   **Output**: Training/testing sets, quality order, feature names.
+*   **debug_logistic_regression.py**:
+    *   Debugging script for the Logistic Regression model (potentially incomplete).
+*   **Dockerfile.bentoml**:
+    *   Dockerfile for building a BentoML service.
+    *   **Input**: `requirements.txt`, `service.py`.
+*   **Dockerfile.train**:
+    *   Dockerfile for building the training environment.
+*   **mlflow_logging.py**:
+    *   Logs model parameters, metrics, and artifacts to MLflow.
+    *   **Input**: Trained model, model name, parameters, classification report, data.
+    *   **Output**: MLflow logs.
+*   **models.py**:
+    *   Defines model configurations (Logistic Regression, Random Forest).
+    *   **Output**: List of model configurations.
+*   **new_test.sh**:
+    *   Runs tests by executing `pipeline.py` inside a Docker container.
+    *   **Input**: Environment variables from `.env`.
+*   **output.log**:
+    *   Log file for the pipeline output (training and evaluation results).
+*   **pipeline.py**:
+    *   Orchestrates the ML pipeline: loads data, preprocesses, trains/evaluates models, and logs to MLflow.
+    *   **Input**: None (relies on other modules/configurations).
+    *   **Output**: Trained models, MLflow logs.
+*   **problems.md**:
+    *   Documents problems encountered during the project and their solutions.
+*   **requirements.txt**:
+    *   Lists Python dependencies for the project.
+*   **service_fixed.py**:
+*   **service.py**:
+    *   Defines the BentoML service, loads models from MLflow, and defines API endpoints for predictions.
+    *   **Input**: MLflow models.
+    *   **Output**: BentoML service.
+*   **train_container.log**:
+    *   Log file for the training container output.
+*   **training.py**:
+    *   Trains and evaluates a model based on a given configuration, logging results to MLflow.
+    *   **Input**: Model configuration, training data, testing data.
+    *   **Output**: Trained model, classification report.
+*   **wine_work.py**:
+    *   Script for working with wine quality data (data exploration/preprocessing).
