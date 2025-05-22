@@ -1,6 +1,6 @@
 # Wine Quality Classification Project
 
-This project trains and evaluates ML models to classify wine quality using MLflow for experiment tracking and DagsHub for collaboration.
+This project trains and evaluates ML models to classify wine quality using MLflow for experiment tracking and DagsHub for collaboration. After models are added to MLflow Model Registry, they are loaded with BentoML and packaged into Bentos.
 
 ## File Breakdown
 
