@@ -166,6 +166,7 @@ def _set_staging_alias(registered_model_name, model_version_info=None):
     Prefers using the version from model_version_info if provided, falls back to searching for the numerically latest.
     """
     alias_name = "Staging"
+    logger.info(f"Attempting to set staging alias for model {registered_model_name}")
 
     if not registered_model_name:
         logger.warning(f"No registered model name provided for alias assignment. Skipping alias assignment.")
@@ -210,6 +211,8 @@ def _set_staging_alias(registered_model_name, model_version_info=None):
             logger.error(f"Failed to set '{alias_name}' alias for model '{registered_model_name}': {type(e).__name__} - {e}")
             logger.error(traceback.format_exc()) # Log traceback for alias setting failure
             # Do not re-raise, alias assignment failure shouldn't stop logging
+        else:
+            logger.info(f"Successfully set alias '{alias_name}' for model '{registered_model_name}' version {latest_version_number_str}")
 
 
     else:

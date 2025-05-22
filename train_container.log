@@ -1,0 +1,108 @@
+2.22.0
+2025-05-21 16:22:34,452 - __main__ - INFO - Starting ML pipeline...
+2025-05-21 16:22:34,452 - config - INFO - Starting DagsHub/MLflow initialization...
+2025-05-21 16:22:34,452 - config - INFO - DEBUG: Raw MLFLOW_TRACKING_TOKEN: '"71f26894d16c0acc62defa4c841c90f2f2ae4716" ' (Type: <class 'str'>)
+2025-05-21 16:22:34,453 - config - INFO - DEBUG: Raw MLFLOW_TRACKING_PASSWORD: '"71f26894d16c0acc62defa4c841c90f2f2ae4716"' (Type: <class 'str'>)
+2025-05-21 16:22:34,453 - config - INFO - DEBUG: Processed token used for auth: '71f26894d16c0acc62defa4c841c90f2f2ae4716' (Length: 40)
+2025-05-21 16:22:34,453 - config - INFO - DEBUG: Processed token (partial): '71f26...e4716'
+2025-05-21 16:22:34,453 - config - INFO - Set MLFLOW/DAGSHUB environment variables in Python process.
+2025-05-21 16:22:34,453 - config - INFO - Ensured directory exists: /root/.dagshub
+2025-05-21 16:22:34,453 - config - INFO - Created credentials file at /root/.dagshub/credentials
+2025-05-21 16:22:34,454 - config - INFO - Created token cache at /root/.dagshub/token_cache.json
+2025-05-21 16:22:34,454 - config - INFO - Created session file at /root/.dagshub/.session
+2025-05-21 16:22:34,454 - config - INFO - Attempting to create .netrc file at /root/.netrc for DVC/Git auth.
+2025-05-21 16:22:34,454 - config - INFO - Successfully created and secured .netrc file at /root/.netrc
+2025-05-21 16:22:34,455 - config - INFO - Attempting to parse repo owner/name from MLFLOW_TRACKING_URI: mlflow+https://dagshub.com/fbarulli/MLFlow_backend.mlflow
+2025-05-21 16:22:34,455 - config - INFO - Parsed owner: fbarulli, Final repo name: MLFlow_backend
+2025-05-21 16:22:34,455 - config - INFO - Attempting direct authentication using dagshub.auth methods...
+2025-05-21 16:22:34,455 - config - INFO - Using add_app_token method...
+2025-05-21 16:22:34,699 - httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/user "HTTP/1.1 200 OK"
+2025-05-21 16:22:34,703 - config - INFO - dagshub.auth.add_app_token succeeded.
+2025-05-21 16:22:34,703 - config - INFO - MLflow tracking URI set to: mlflow+https://dagshub.com/fbarulli/MLFlow_backend.mlflow
+2025-05-21 16:22:34,704 - config - INFO - Initializing DagsHub integration for fbarulli/MLFlow_backend using explicit init...
+2025-05-21 16:22:34,920 - httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/user "HTTP/1.1 200 OK"
+Accessing as fbarulli
+2025-05-21 16:22:34,936 - dagshub - INFO - Accessing as fbarulli
+2025-05-21 16:22:35,199 - httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/repos/fbarulli/MLFlow_backend "HTTP/1.1 200 OK"
+2025-05-21 16:22:35,392 - httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/user "HTTP/1.1 200 OK"
+Initialized MLflow to track repo [32m"fbarulli/MLFlow_backend"[0m
+2025-05-21 16:22:35,396 - dagshub - INFO - Initialized MLflow to track repo "fbarulli/MLFlow_backend"
+Repository fbarulli/MLFlow_backend initialized!
+2025-05-21 16:22:35,397 - dagshub - INFO - Repository fbarulli/MLFlow_backend initialized!
+2025-05-21 16:22:35,398 - config - INFO - DagsHub MLflow integration initialized successfully (explicit).
+2025-05-21 16:22:35,398 - config - INFO - Setting up environment...
+2025-05-21 16:22:35,398 - config - INFO - Outputs folder created at "/app/outputs"
+2025-05-21 16:22:35,398 - config - INFO - MLflow tracking URI confirmed and set to: https://dagshub.com/fbarulli/MLFlow_backend.mlflow
+2025-05-21 16:22:35,398 - config - INFO - MLflow Scikit-learn autologging disabled.
+2025-05-21 16:22:35,399 - __main__ - INFO - Using output directory: "/app/outputs"
+2025-05-21 16:22:35,399 - __main__ - INFO - Loading and preprocessing data...
+2025-05-21 16:22:35,399 - data - INFO - Attempting to download dataset 'wine_quality_classification.csv' from Kaggle repo 'sahideseker/wine-quality-classification' using kagglehub
+Downloading from https://www.kaggle.com/api/v1/datasets/download/sahideseker/wine-quality-classification?dataset_version_number=1&file_name=wine_quality_classification.csv...
+  0%|                                                                                                                                                                | 0.00/25.3k [00:00<?, ?B/s]100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 25.3k/25.3k [00:00<00:00, 4.85MB/s]
+2025-05-21 16:22:37,152 - data - INFO - Dataset downloaded successfully using kagglehub.
+2025-05-21 16:22:37,152 - data - INFO - Dataset shape: (1000, 5)
+2025-05-21 16:22:37,156 - data - INFO - Target encoded successfully.
+2025-05-21 16:22:37,159 - data - INFO - Data split successfully. Train shape: (800, 4), Test shape: (200, 4)
+2025-05-21 16:22:37,159 - __main__ - INFO - Data loaded and preprocessed. Train samples: 800, Test samples: 200
+2025-05-21 16:22:37,160 - __main__ - INFO - Feature names (4) match X_train shape (4).
+2025-05-21 16:22:37,160 - __main__ - INFO - Getting model configurations...
+2025-05-21 16:22:37,160 - models - INFO - Defined 2 model configurations.
+2025-05-21 16:22:37,160 - __main__ - INFO - Found 2 model configurations.
+2025-05-21 16:22:37,307 - __main__ - ERROR - Pipeline execution failed due to an error: API request to endpoint /api/2.0/mlflow/experiments/get-by-name failed with error code 401 != 200. Response body: '=============== ATTENTION! ===============
+
+To use authentication, you must first: 
+    Get your default access token from: https://dagshub.com/user/settings/tokens
+    OR 
+    Set a password: https://dagshub.com/user/settings/password 
+=========================================='
+2025-05-21 16:22:37,310 - __main__ - ERROR - Traceback (most recent call last):
+  File "/app/pipeline.py", line 53, in main
+    mlflow.set_experiment(experiment_name)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/tracking/fluent.py", line 157, in set_experiment
+    experiment = client.get_experiment_by_name(experiment_name)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/tracking/client.py", line 1703, in get_experiment_by_name
+    return self._tracking_client.get_experiment_by_name(name)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/tracking/_tracking_service/client.py", line 591, in get_experiment_by_name
+    return self.store.get_experiment_by_name(name)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/store/tracking/rest_store.py", line 641, in get_experiment_by_name
+    response_proto = self._call_endpoint(GetExperimentByName, req_body)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/store/tracking/rest_store.py", line 90, in _call_endpoint
+    return call_endpoint(self.get_host_creds(), endpoint, method, json_body, response_proto)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/utils/rest_utils.py", line 402, in call_endpoint
+    response = verify_rest_response(response, endpoint)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/utils/rest_utils.py", line 265, in verify_rest_response
+    raise MlflowException(
+mlflow.exceptions.MlflowException: API request to endpoint /api/2.0/mlflow/experiments/get-by-name failed with error code 401 != 200. Response body: '=============== ATTENTION! ===============
+
+To use authentication, you must first: 
+    Get your default access token from: https://dagshub.com/user/settings/tokens
+    OR 
+    Set a password: https://dagshub.com/user/settings/password 
+=========================================='
+
+Traceback (most recent call last):
+  File "/app/pipeline.py", line 183, in <module>
+    main()
+  File "/app/pipeline.py", line 53, in main
+    mlflow.set_experiment(experiment_name)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/tracking/fluent.py", line 157, in set_experiment
+    experiment = client.get_experiment_by_name(experiment_name)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/tracking/client.py", line 1703, in get_experiment_by_name
+    return self._tracking_client.get_experiment_by_name(name)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/tracking/_tracking_service/client.py", line 591, in get_experiment_by_name
+    return self.store.get_experiment_by_name(name)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/store/tracking/rest_store.py", line 641, in get_experiment_by_name
+    response_proto = self._call_endpoint(GetExperimentByName, req_body)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/store/tracking/rest_store.py", line 90, in _call_endpoint
+    return call_endpoint(self.get_host_creds(), endpoint, method, json_body, response_proto)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/utils/rest_utils.py", line 402, in call_endpoint
+    response = verify_rest_response(response, endpoint)
+  File "/usr/local/lib/python3.10/site-packages/mlflow/utils/rest_utils.py", line 265, in verify_rest_response
+    raise MlflowException(
+mlflow.exceptions.MlflowException: API request to endpoint /api/2.0/mlflow/experiments/get-by-name failed with error code 401 != 200. Response body: '=============== ATTENTION! ===============
+
+To use authentication, you must first: 
+    Get your default access token from: https://dagshub.com/user/settings/tokens
+    OR 
+    Set a password: https://dagshub.com/user/settings/password 
+=========================================='

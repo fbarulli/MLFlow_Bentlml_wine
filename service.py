@@ -1,132 +1,95 @@
-# mlflow_tracking/bentoml/service.py
-import bentoml
-from bentoml.io import JSON
-from pydantic import BaseModel, Field
-import pandas as pd
+import os
 import logging
 import traceback
-import os
+import mlflow.sklearn
+import bentoml
+from bentoml.io import PandasDataFrame
+import pandas as pd
+import numpy as np
+from mlflow.tracking import MlflowClient
 
-logging.basicConfig(level=logging.INFO)
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-class WineInput(BaseModel):
-    data: list[list[float]] = Field(..., min_items=1)
-    columns: list[str] = Field(
-        default=[
-            "fixed acidity", "volatile acidity", "citric acidity", "residual sugar",
-            "chlorides", "free sulfur dioxide", "total sulfur dioxide", "density",
-            "pH", "sulphates", "alcohol", "Id"
-        ],
-        min_items=12,
-        max_items=12
-    )
+# Load environment variables and set tracking URI
+try:
+    tracking_uri = os.environ["MLFLOW_TRACKING_URI"].replace("mlflow+", "")
+    mlflow.set_tracking_uri(tracking_uri)
+    logger.info(f"MLflow tracking URI set to: {tracking_uri}")
+except Exception as e:
+    logger.error(f"Error setting MLflow tracking URI: {e}")
+    logger.error(traceback.format_exc())
+    raise
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "data": [[7.4, 0.7, 0.0, 1.9, 0.076, 11.0, 34.0, 0.9978, 3.51, 0.56, 9.4, 0]],
-                "columns": [
-                    "fixed acidity", "volatile acidity", "citric acidity", "residual sugar",
-                    "chlorides", "free sulfur dioxide", "total sulfur dioxide", "density",
-                    "pH", "sulphates", "alcohol", "Id"
-                ]
-            }
-        }
-
-# Define the BentoML service. The name must match the service name used when serving.
-svc = bentoml.Service("wine_quality_service")
-
-# --- Load the model runner using the tag provided by the entrypoint ---
-# This happens when the service definition is loaded/built by bentoml.
-# The entrypoint.sh script is responsible for setting this environment variable.
-BENTOML_MODEL_TAG = os.environ.get("BENTOML_SERVE_MODEL_TAG")
-
-if not BENTOML_MODEL_TAG:
-    # This indicates a configuration error in the entrypoint or deployment setup.
-    logger.error("BENTOML_SERVE_MODEL_TAG environment variable not set. Cannot load model.")
-    # Listing models here might help debugging, but the primary issue is the missing env var.
-    logger.info("Available models in BentoML store:")
+# Function to verify model registration and stage
+def verify_model_registration(model_name, stage):
+    client = MlflowClient()
     try:
-        available_models = bentoml.models.list()
-        if available_models:
-            for model in available_models:
-                logger.info(f"  - {model.tag}")
-        else:
-             logger.info("  (No models found)")
-    except Exception as list_err:
-         logger.error(f"Error listing models: {str(list_err)}")
+        model_versions = client.search_model_versions(f"name='{model_name}'")
+        for version in model_versions:
+            if stage in version.aliases or version.current_stage == stage:
+                logger.info(f"Model '{model_name}' found in stage/alias '{stage}' with version {version.version}")
+                return True
+        logger.error(f"No versions of model '{model_name}' found in stage/alias '{stage}'")
+        return False
+    except Exception as e:
+        logger.error(f"Error verifying model registration for '{model_name}': {e}")
+        return False
 
-    # Raise an error here during service definition loading.
-    # BentoML will catch this and the container startup will fail.
-    raise ValueError("BENTOML_SERVE_MODEL_TAG not set. Please ensure the entrypoint script sets this.")
-else:
-    logger.info(f"Loading BentoML model with tag: {BENTOML_MODEL_TAG}")
-    try:
-        # Load the model specified by the tag
-        model_to_serve = bentoml.models.get(BENTOML_MODEL_TAG)
-        logger.info(f"Successfully loaded model: {model_to_serve.tag}")
-    except bentoml.exceptions.NotFound:
-        logger.error(f"BentoML model with tag '{BENTOML_MODEL_TAG}' not found in the local store.")
-        logger.info("Available models in BentoML store:")
+# Define model URIs
+logistic_regression_model_uri = "models:/tracking-wine-logisticregression/Staging"
+random_forest_model_uri = "models:/tracking-wine-randomforest/Staging"
+
+# Model names and stage
+model_name_lr = "tracking-wine-logisticregression"
+model_name_rf = "tracking-wine-randomforest"
+stage = "Staging"
+
+# Verify model registration before loading
+if not verify_model_registration(model_name_lr, stage):
+    raise Exception(f"Model '{model_name_lr}' not found in stage/alias '{stage}'")
+if not verify_model_registration(model_name_rf, stage):
+    raise Exception(f"Model '{model_name_rf}' not found in stage/alias '{stage}'")
+
+# Load the MLflow models
+try:
+    logistic_regression_model = mlflow.sklearn.load_model(logistic_regression_model_uri)
+    random_forest_model = mlflow.sklearn.load_model(random_forest_model_uri)
+    feature_names_lr = logistic_regression_model.feature_names_in_ if hasattr(logistic_regression_model, 'feature_names_in_') else None
+    feature_names_rf = random_forest_model.feature_names_in_ if hasattr(random_forest_model, 'feature_names_in_') else None
+    logger.info("MLflow models loaded successfully.")
+except Exception as e:
+    logger.error(f"Error loading MLflow models: {e}")
+    logger.error(traceback.format_exc())
+    raise
+
+# Define a BentoML service
+@bentoml.service(
+    resources={"cpu": "2", "memory": "2Gi"},
+    traffic={"timeout": 30},
+)
+class WineQualityService:
+    @bentoml.api(input=PandasDataFrame(), output="numpy.ndarray")
+    def predict_logistic_regression(self, df: pd.DataFrame) -> np.ndarray:
         try:
-            available_models = bentoml.models.list()
-            if available_models:
-                for model in available_models:
-                    logger.info(f"  - {model.tag}")
-            else:
-                logger.info("  (No models found)")
-        except Exception as list_err:
-            logger.error(f"Error listing models: {str(list_err)}")
-        # Raise error during service loading if the specified model isn't found
-        raise ValueError(f"BentoML model '{BENTOML_MODEL_TAG}' not found.")
-    except Exception as e:
-        logger.error(f"Error loading BentoML model with tag '{BENTOML_MODEL_TAG}': {str(e)}")
-        logger.error(traceback.format_exc())
-        raise # Re-raise other exceptions during loading
+            if feature_names_lr and list(df.columns) != list(feature_names_lr):
+                logger.warning("Input DataFrame columns do not match model feature names. Reordering...")
+                df = df.reindex(columns=feature_names_lr)
+            return logistic_regression_model.predict(df)
+        except Exception as e:
+            logger.error(f"Error predicting with Logistic Regression model: {e}")
+            logger.error(traceback.format_exc())
+            raise
 
-
-# Create the runner from the loaded model
-# This prepares the model for inference, potentially loading it into memory/GPU
-wine_runner = model_to_serve.to_runner()
-
-# Add the runner to the BentoML service
-# This makes the runner available to API functions
-svc.add_runner(wine_runner)
-
-
-@svc.api(input=JSON(pydantic_model=WineInput), output=JSON())
-async def predict(input_data: WineInput):
-    """
-    Prediction API endpoint.
-    Receives WineInput data, performs inference using the loaded model runner,
-    and returns the predicted wine quality labels.
-    """
-    try:
-        # Convert the input Pydantic model data to a pandas DataFrame
-        # Ensure columns match the training data's expected feature order
-        input_df = pd.DataFrame(input_data.data, columns=input_data.columns)
-        
-        # Use the runner to perform inference.
-        # The runner is added to the service and managed by the BentoML runtime.
-        # async_run is used because predict is an async api function
-        predictions = await wine_runner.predict.async_run(input_df)
-
-        logger.info(f"Generated {len(predictions)} predictions.")
-
-        # Convert predicted labels (0, 1, 2) back to quality names ("low", "medium", "high")
-        # This mapping should ideally be stored with the model or derived from training data.
-        # For simplicity here, it's hardcoded.
-        # Ensure the predicted values are integers before mapping
-        quality_map = {0: "low", 1: "medium", 2: "high"}
-        # Use a default value like "unknown" if a prediction falls outside 0, 1, 2
-        predicted_labels = [quality_map.get(int(p), "unknown") for p in predictions] 
-
-        # Return the predictions as a JSON object
-        return {"predictions": predicted_labels}
-    except Exception as e:
-        logger.error(f"Prediction failed: {str(e)}")
-        logger.error(traceback.format_exc())
-        # Re-raise the exception. BentoML will handle uncaught exceptions by
-        # returning a 500 Internal Server Error response.
-        raise
+    @bentoml.api(input=PandasDataFrame(), output="numpy.ndarray")
+    def predict_random_forest(self, df: pd.DataFrame) -> np.ndarray:
+        try:
+            if feature_names_rf and list(df.columns) != list(feature_names_rf):
+                logger.warning("Input DataFrame columns do not match model feature names. Reordering...")
+                df = df.reindex(columns=feature_names_rf)
+            return random_forest_model.predict(df)
+        except Exception as e:
+            logger.error(f"Error predicting with Random Forest model: {e}")
+            logger.error(traceback.format_exc())
+            raise

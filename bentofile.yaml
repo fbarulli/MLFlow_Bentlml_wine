@@ -1,0 +1,9 @@
+service: "service:WineQualityService"
+labels:
+  owner: bentoml
+  stage: dev
+include:
+- "*.py"
+- ".env"
+python:
+  requirements_txt: "requirements.txt"
