@@ -4,10 +4,8 @@ import traceback
 import warnings
 import mlflow.sklearn
 import bentoml
-# Removed imports from bentoml.io - use standard type hints instead
 import pandas as pd
 import numpy as np
-from mlflow.tracking import MlflowClient
 from dotenv import load_dotenv
 
 # Suppress sklearn version warnings
@@ -50,6 +48,68 @@ except Exception as e:
     logger.error(f"Error setting MLflow tracking URI: {e}")
     logger.error(traceback.format_exc())
     raise
+
+def safe_load_model(model_uri, model_name):
+    """
+    Safely load a model with version compatibility handling
+    """
+    try:
+        logger.info(f"Attempting to load {model_name} from {model_uri}")
+
+        # Try loading with warnings suppressed
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model = mlflow.sklearn.load_model(model_uri)
+
+        logger.info(f"✅ Successfully loaded {model_name}")
+        return model, None
+
+    except Exception as e:
+        error_msg = str(e)
+        logger.error(f"❌ Failed to load {model_name}: {error_msg}")
+
+        # Check if it's a version compatibility issue
+        if "incompatible dtype" in error_msg or "version" in error_msg.lower():
+            logger.warning(f"Version compatibility issue detected for {model_name}")
+            return None, f"Version compatibility issue: {error_msg}"
+        else:
+            return None, f"Loading error: {error_msg}"
+
+def get_model_uri(model_name, preferred_stage="Staging"):
+    """
+    Get the model URI, preferring the specified stage but falling back to latest version.
+    """
+    client = MlflowClient()
+
+    try:
+        model_versions = client.search_model_versions(f"name='{model_name}'")
+
+        if not model_versions:
+            raise Exception(f"No versions found for model '{model_name}'")
+
+        # Check for preferred stage/alias
+        for version in model_versions:
+            if preferred_stage in version.aliases or version.current_stage == preferred_stage:
+                logger.info(f"Found model '{model_name}' in {preferred_stage}: version {version.version}")
+                return f"models:/{model_name}/{preferred_stage}", version.version
+
+        # Fallback to latest version
+        logger.warning(f"Model '{model_name}' not found in {preferred_stage}. Using latest version.")
+
+        # Sort by version number (assuming they are numeric)
+        try:
+            sorted_versions = sorted(model_versions, key=lambda x: int(x.version), reverse=True)
+        except ValueError:
+            # If versions are not numeric, sort by creation timestamp
+            sorted_versions = sorted(model_versions, key=lambda x: x.creation_timestamp, reverse=True)
+
+        latest_version = sorted_versions[0]
+        logger.info(f"Using latest version {latest_version.version} for model '{model_name}')")
+        return f"models:/{model_name}/{latest_version.version}", latest_version.version
+
+    except Exception as e:
+        logger.error(f"Error getting model URI for '{model_name}': {e}")
+        raise
 
 def safe_load_model(model_uri, model_name):
     """
